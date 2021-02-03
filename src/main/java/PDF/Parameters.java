@@ -3,16 +3,16 @@ package PDF;
 public class Parameters {
 
 
-//	private static String PathToSave= "//192.168.90.203/Logistyka/Listy";
-//	private static String PathToSaveHours= "//192.168.90.203/Logistyka/Raporty godzin";
-//	private static String PathToOSN= "//192.168.90.203/OSN/Listy programistow";
-//	private static String PathToDokumentacjaHacoSoft= "//192.168.90.203/DokumentacjaHacosoft/Listy programistow";
+	private static String PathToSave= "//192.168.90.203/Logistyka/Listy";
+	private static String PathToSaveHours= "//192.168.90.203/Logistyka/Raporty godzin";
+	private static String PathToOSN= "//192.168.90.203/OSN/Listy programistow";
+	private static String PathToDokumentacjaHacoSoft= "//192.168.90.203/DokumentacjaHacosoft/Listy programistow";
 
 	// do testow - zapisuje lokalnie
-	private static String PathToSave= "\\\\192.168.90.203\\common\\Listy_testowe";
-	private static String PathToSaveHours= "\\\\192.168.90.203\\common\\Listy_testowe";
-	private static String PathToOSN= "\\\\192.168.90.203\\common\\Listy_testowe";
-	private static String PathToDokumentacjaHacoSoft= "\\\\192.168.90.203\\common\\Listy_testowe";
+//	private static String PathToSave= "\\\\192.168.90.203\\common\\Listy_testowe";
+//	private static String PathToSaveHours= "\\\\192.168.90.203\\common\\Listy_testowe";
+//	private static String PathToOSN= "\\\\192.168.90.203\\common\\Listy_testowe";
+//	private static String PathToDokumentacjaHacoSoft= "\\\\192.168.90.203\\common\\Listy_testowe";
 	
 
 	

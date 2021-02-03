@@ -115,122 +115,29 @@ public class MainProgramWindowStart extends JFrame {
 		    	System.out.println("Blad w tworzeniu folderu z listami");
 		    }  
 		}
-		
-		//Harmonogramy - maszyn i wszystkich projektów
-		try {
-			new PDF_Harmonogram_projektow();
-		} catch (SQLException e) {
-			System.out.println("Blad SQL w tworzeniu harmonogramu");
-			e.printStackTrace();
-		}
-		PDF_AnalizaStruktur.run();
-		chk00.setSelected(true);
-		
-		//PDF harmonogramy maszyn
-		try {
-			PDF_Harmonogram_projektow.createPDFMachines();
-			PDF_Harmonogram_projektow.createPDFAll();
-		} catch (SQLException e) {
-			System.out.println("Blad SQL w tworzeniu pdfów harmonogramu");
-			e.printStackTrace();
-		}
-		chk01.setSelected(true);
-		
-		//Lista dla programistów
-		try {
-			PDF_AnalizaCNC.run();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		chk02.setSelected(true);
-		
-		//Lista produkcyjna 'Czesiowa' oraz zlozenia spawane
-		PDF_Lista_produkcyjna.create();
-		chk03.setSelected(true);
-		
-		//Lista dla zakupów
-		PDF_Zakupy.create();
-		chk04.setSelected(true);
-		
-		//Lista materialow (krajalnia)
-		PDF_Lista_materialow_zlecen.createPDFs();
-		chk05.setSelected(true);
-		
-		//Listy niewydanych artykulow wedlug taktow - tylko magazyny 102, 103 i wszystko razem
-		PDF_Lista_niewydanych_102.create();
-		PDF_Lista_niewydanych_103.create();
-		PDF_Lista_niewydanych.create();
-		chk06.setSelected(true);
-		
-		//Lista montazowa - co jest wykonane
-		try {
-			PDF_Harmonogram_montazu.create(true);
-		} catch (SQLException e) {
-			System.out.println("Blad SQL w tworzeniu listy montazowej");
-			e.printStackTrace();
-		}
-		chk07.setSelected(true);
-	
-		//Lista otwartych artykulow zamowionych w SACA do maszyn
-		try {
-			PDF_SACA.createDB();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		PDF_SACA.createDoc();
-		chk08.setSelected(true);
-		
-		//Harmonogram dla marketingu (z podzialem na same magazynowki)
-		PDF_Marketing.create();
-		PDF_Marketing.createOnlyMagazine();
-		try {
-			PDF_Marketing.checkInvoices();
-		} catch (SQLException e) {
-			System.out.println("Blad SQL w tworzeniu listy zaliczek");
-			e.printStackTrace();
-		}
-		chk09.setSelected(true);
-		
-		//Lista zadan dla konstrukcji
-		PDF_Construction.create();
-		chk10.setSelected(true);
-				
-		//Lista dla programistów
-		try {
-			PDF_Programisci.create();
-		} catch (SQLException e) {
-			System.out.println("Blad SQL w tworzeniu listy montazowej");
-			e.printStackTrace();
-		}
-		chk11.setSelected(true);
-		
-		//Lista dla serwisu
-		try {
-			PDF_Serwis.create();
-		} catch (SQLException e1) {
-			e1.printStackTrace();
-		}
-		chk12.setSelected(true);
-		
-		//co poniedzialek raport godzin (ile pracownicy siê rejestruj¹)
-		if(date.get(Calendar.DAY_OF_WEEK)==Calendar.MONDAY)
-			try {
-				PDF_Godziny.createWeekRaport();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-	
-		try {
-			PDF_Braki_w_uruchomieniu.create();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		chk12.setSelected(true);
+
+		PDF_Harmonogram_Projektow();
+		PDF_Harmonogram_maszyn();
+		PDF_AnalizaCNC();
+		PDF_Lista_Produkcyjna();
+		PDF_ListaZakupowa();
+		PDF_Lista_materialow_zlecen();
+		PDF_Lista_niwydanych_102_103();
+		PDF_Harmonogram_montazu();
+		PDF_SACA();
+		PDF_Marketing();
+		PDF_Contruction();
+		PDF_Programisci();
+		PDF_Serwis();
+		PDF_Braki_wUruchomieniu(date);
 		
 		Maintenance();
 		System.exit(0);
 		
-	} 
+	}
+
+
+
 	
 //koniec maina
 	
@@ -430,4 +337,143 @@ public class MainProgramWindowStart extends JFrame {
 	    }
 	    return(directory.delete());
 	}
+
+	public static void PDF_Harmonogram_Projektow()
+	{
+		try {
+			new PDF_Harmonogram_projektow();
+		} catch (SQLException e) {
+			System.out.println("Blad SQL w tworzeniu harmonogramu");
+			e.printStackTrace();
+		}
+		PDF_AnalizaStruktur.run();
+		chk00.setSelected(true);
+	}
+
+	public static void PDF_Harmonogram_maszyn()
+	{
+		try {
+			PDF_Harmonogram_projektow.createPDFMachines();
+			PDF_Harmonogram_projektow.createPDFAll();
+		} catch (SQLException e) {
+			System.out.println("Blad SQL w tworzeniu pdfï¿½w harmonogramu");
+			e.printStackTrace();
+		}
+		chk01.setSelected(true);
+	}
+
+	public static void PDF_AnalizaCNC()
+	{
+		try {
+			PDF_AnalizaCNC.run();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		chk02.setSelected(true);
+	}
+
+	public static void PDF_Lista_Produkcyjna()
+	{
+		PDF_Lista_produkcyjna.create();
+		chk03.setSelected(true);
+	}
+
+	public static void PDF_ListaZakupowa()
+	{
+		PDF_Zakupy.create();
+		chk04.setSelected(true);
+	}
+
+	public static void PDF_Lista_materialow_zlecen()
+	{
+		PDF_Lista_materialow_zlecen.createPDFs();
+		chk05.setSelected(true);
+	}
+
+	public static void PDF_Lista_niwydanych_102_103()
+	{
+		PDF_Lista_niewydanych_102.create();
+		PDF_Lista_niewydanych_103.create();
+		PDF_Lista_niewydanych.create();
+		chk06.setSelected(true);
+	}
+
+	public static void PDF_Harmonogram_montazu()
+	{
+		try {
+			PDF_Harmonogram_montazu.create(true);
+		} catch (SQLException e) {
+			System.out.println("Blad SQL w tworzeniu listy montazowej");
+			e.printStackTrace();
+		}
+		chk07.setSelected(true);
+	}
+
+	public static void PDF_SACA() {
+		try {
+			PDF_SACA.createDB();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		PDF_SACA.createDoc();
+		chk08.setSelected(true);
+	}
+
+	public static void PDF_Marketing()
+	{
+		PDF_Marketing.create();
+		PDF_Marketing.createOnlyMagazine();
+		try {
+			PDF_Marketing.checkInvoices();
+		} catch (SQLException e) {
+			System.out.println("Blad SQL w tworzeniu listy zaliczek");
+			e.printStackTrace();
+		}
+		chk09.setSelected(true);
+	}
+
+	public static void PDF_Contruction()
+	{
+		PDF_Construction.create();
+		chk10.setSelected(true);
+	}
+
+	public static void PDF_Programisci()
+	{
+		try {
+			PDF_Programisci.create();
+		} catch (SQLException e) {
+			System.out.println("Blad SQL w tworzeniu listy montazowej");
+			e.printStackTrace();
+		}
+		chk11.setSelected(true);
+	}
+
+	public static void PDF_Serwis()
+	{
+		try {
+			PDF_Serwis.create();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		chk12.setSelected(true);
+	}
+
+	public static void PDF_Braki_wUruchomieniu(Calendar date)
+	{
+		if(date.get(Calendar.DAY_OF_WEEK)==Calendar.MONDAY)
+			try {
+				PDF_Godziny.createWeekRaport();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+
+		try {
+			PDF_Braki_w_uruchomieniu.create();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		chk12.setSelected(true);
+	}
+
 }

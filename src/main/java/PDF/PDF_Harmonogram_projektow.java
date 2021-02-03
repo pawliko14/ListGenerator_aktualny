@@ -579,13 +579,13 @@ public class PDF_Harmonogram_projektow {
 	private static void createARow(String [] dane, PdfPTable t) {
 		
 		boolean red = false;
-		try {
-            Date wysylka = new SimpleDateFormat("yyyy-MM-dd").parse(dane[4]);
-            Date produkcja = new SimpleDateFormat("yyyy-MM-dd").parse(dane[3]);
-            if (produkcja.compareTo(wysylka) > 0) red = true;
-        } catch (ParseException e) {
-        	System.out.println(dane[0]+" Problem z formatem daty");
-        }
+//		try {
+//            Date wysylka = new SimpleDateFormat("yyyy-MM-dd").parse(dane[4]);
+//            Date produkcja = new SimpleDateFormat("yyyy-MM-dd").parse(dane[3]);
+//            if (produkcja.compareTo(wysylka) > 0) red = true;
+//        } catch (ParseException e) {
+//        	System.out.println(dane[0]+" Problem z formatem daty");
+//        }
 		
 		for(int i = 0; i< dane.length; i++) {
 			PdfPCell cell1 = new PdfPCell(new Phrase(dane[i], ffont));
@@ -601,7 +601,7 @@ public class PDF_Harmonogram_projektow {
 	//stworzenie naglowka dokumentu
 	private static void createAHeader(PdfPTable t){
 		
-		String [] nagl = new String[] {"Numer projektu", "Nazwa", "Klient", "Data produkcji czêœci", "Data koñca monta¿u"};
+		String [] nagl = new String[] {"Numer projektu", "Nazwa", "Klient", "Opis asortymentu", "Data koñca monta¿u"};
 		
 		for(int i = 0; i< nagl.length; i++) {
 			PdfPCell cell1 = new PdfPCell(new Phrase(nagl[i], ffont));
@@ -618,6 +618,7 @@ public class PDF_Harmonogram_projektow {
 		System.out.println("Tworzenie harmonogramu wszystkich projektów");
 		Connection myConn = DBConnection.dbConnector();
 		Document ps = new Document();
+
 		SimpleDateFormat doNazwy = new SimpleDateFormat("yyyy.MM.dd");
 		SimpleDateFormat godz = new SimpleDateFormat("HH;mm");
 		Calendar date = Calendar.getInstance();
@@ -681,7 +682,7 @@ public class PDF_Harmonogram_projektow {
 	//metoda tworzaca dokument - wszystkie projekty MASZYN 2/ i 6/ i 0/
 	public static void createPDFMachines() throws SQLException{
 		System.out.println("Tworzenie harmonogramu maszyn");
-		Document ps = new Document();
+		Document ps = new Document(PageSize.A4.rotate());
 		Connection myConn = DBConnection.dbConnector();
 		SimpleDateFormat doNazwy = new SimpleDateFormat("yyyy.MM.dd");
 		SimpleDateFormat godz = new SimpleDateFormat("HH;mm");
@@ -701,11 +702,11 @@ public class PDF_Harmonogram_projektow {
 		}
 		ps.open();
 		PdfPTable table = new PdfPTable(6);
-		float widths[] = new float[] { 10, 30, 15, 10, 10, 10};
+		float widths[] = new float[] { 10, 30, 15, 25, 10, 10};
 		createAHeader(table);
 		
 		//poszerzenie listy o jedna kolumne - data wysylki
-		PdfPCell cell4 = new PdfPCell(new Phrase("Data wysy³ki", ffont));
+		PdfPCell cell4 = new PdfPCell(new Phrase("Zadana Data wyslki", ffont));
 		//PdfPCell cell4 = new PdfPCell(new Phrase("Kwota", ffont));
 		cell4.setMinimumHeight(30);
 		cell4.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -722,10 +723,18 @@ public class PDF_Harmonogram_projektow {
 			String [] p = calyNumer.split("/");
 			String ProjectGroup = p[0];
 			String ProjectNumber = p[1];
-			
+
+
+			VerkoopObject object = GetInformationFromVerkoop(ProjectNumber,myConn);
+
+
+
+
 			String DeliveryDate = ProjectSchedule.getString("dataKoniecMontazu");
-			String ProductionDate = ProjectSchedule.getString("dataProdukcji");
-			String Kontrakt = ProjectSchedule.getString("dataKontrakt");
+			String ProductionDate = object.getCOMMENTAAR2();
+//			String Kontrakt = ProjectSchedule.getString("dataKontrakt");
+			String Kontrakt = object.getLEVERDATUM();
+
 			String ProjectName = ProjectSchedule.getString("Opis");
 			String klient = ProjectSchedule.getString("klient");
 			if((ProjectGroup.equals("2") || ProjectGroup.equals("6")||ProjectGroup.equals("0"))&&(ProjectNumber.length()==6||ProjectNumber.equals("17052020")))
@@ -759,8 +768,60 @@ public class PDF_Harmonogram_projektow {
 		myConn.close();
 		//Desktop.getDesktop().open(new File("projectSchedule.pdf"));
 		System.out.println("Koniec harmonogramu maszyn");
+
 	}
-	
+
+	public static class VerkoopObject {
+
+
+		private String LEVERDATUM;
+		private String COMMENTAAR2;
+
+
+		public String getLEVERDATUM() {
+			return LEVERDATUM;
+		}
+
+		public void setLEVERDATUM(String LEVERDATUM) {
+			this.LEVERDATUM = LEVERDATUM;
+		}
+
+		public String getCOMMENTAAR2() {
+			return COMMENTAAR2;
+		}
+
+		public void setCOMMENTAAR2(String COMMENTAAR2) {
+			this.COMMENTAAR2 = COMMENTAAR2;
+		}
+	}
+
+
+	private static VerkoopObject GetInformationFromVerkoop(String projectNumber,Connection myConn) throws SQLException {
+
+
+
+		VerkoopObject object = new VerkoopObject();
+		String sql = "select LEVERDATUM_GEVRAAGD , COMMENTAAR2 from verkoop where SERIENUMMER  = ?";
+
+
+		PreparedStatement stmnt = myConn.prepareStatement(sql);
+
+		stmnt.setString(1,projectNumber);
+		ResultSet rs = stmnt.executeQuery();
+
+		if(rs.next())
+		{
+			object.setLEVERDATUM(rs.getString("LEVERDATUM_GEVRAAGD"));
+			object.setCOMMENTAAR2(rs.getString("COMMENTAAR2"));
+		}
+
+
+		rs.close();
+		stmnt.close();
+
+		return object;
+	}
+
 	//metoda znajdujaca zmiane numeru -> podpinanie projektu pod projekt itd
 	public static void findChangeOfNumber() throws SQLException{
 		Connection connection = DBConnection.dbConnector();

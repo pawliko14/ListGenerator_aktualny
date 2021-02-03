@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="ListGenerator_aktualny_v3:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/ListGenerator_aktualny_v3_jar</output-path>
+    <root id="archive" name="ListGenerator_aktualny_v3.jar">
+      <element id="module-output" name="ListGenerator_aktualny_v3" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/itextpdf/itextpdf/5.5.13/itextpdf-5.5.13.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/mariadb/jdbc/mariadb-java-client/2.7.0/mariadb-java-client-2.7.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

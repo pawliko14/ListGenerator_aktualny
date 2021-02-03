@@ -55,7 +55,7 @@ public class PDF_Harmonogram_montazu {
 			
 			//dla ka¿dego projektu
 			Statement pobierzProjectSchedule = myConn.createStatement();
-			String sql = "Select nrMaszyny, opis, klient, dataprodukcji, dataKoniecMontazu, dataKontrakt, Komentarz from calendar where (nrMaszyny like '2/%' or nrMaszyny like '6/%' or nrMaszyny like '0/%') and Zakonczone = 0 and wyslano <> 1 order by dataKoniecMontazu, nrMaszyny";
+			String sql = "Select nrMaszyny, opis, klient, dataprodukcji, dataKoniecMontazu, dataKontrakt, Komentarz from calendar where (nrMaszyny like '2/%' or nrMaszyny like '6/%' or nrMaszyny like '0/%'  or nrMaszyny like '5/%') and Zakonczone = 0 and wyslano <> 1 order by dataKoniecMontazu, nrMaszyny";
 			ResultSet ProjectSchedule = pobierzProjectSchedule.executeQuery(sql);
 			
 			//liczba porz¹dkowa na liœcie monta¿owej lp
@@ -122,8 +122,8 @@ public class PDF_Harmonogram_montazu {
 					List<String> statusy = new ArrayList<String>();
 					List<String> colors = new ArrayList<String>();
 					
-					//projekty uruchomione w produkcji - 2 i 6
-					if(ProjectGroup.equals("2")||ProjectGroup.equals("6")){
+					//projekty uruchomione w produkcji - 2 ,6 ,5
+					if(ProjectGroup.equals("2")||ProjectGroup.equals("6") || ProjectGroup.equals("5")){
 						//robienie listy z zlozeniami/artyku³ami z '$' -> wa¿ne strategicznie
 						List<Zlozenie> Zloz = new ArrayList<Zlozenie>();
 						Statement myStmt4 = myConn.createStatement();
