@@ -130,7 +130,7 @@ public class MainProgramWindowStart extends JFrame {
 		PDF_Programisci();
 		PDF_Serwis();
 		PDF_Braki_wUruchomieniu(date);
-		
+
 		Maintenance();
 		System.exit(0);
 		

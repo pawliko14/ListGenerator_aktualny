@@ -66,7 +66,6 @@ public class PDF_Construction {
 
 			//dla kazdego projektu
 			Statement pobierzProjectSchedule = myConn.createStatement();
-		//	String sql = "select * from construction left join calendar on construction.projekt=calendar.nrmaszyny where Status500 = 'O' order by calendar.dataKoniecMontazu, nrMaszyny";
 			String sql = "select con.KodArtykulu , con.Nazwa, con.Projekt500 , con.KartaPracy, con.NumerSeryjny , con.Projekt , con.StatusWorkbon , con.Status500,\n" +
 					"ca.NrMaszyny ,ca.Opis ,ca.Klient , ca.DataProdukcji ,ca.DataKoniecMontazu ,ca.Typ ,ca.Cena , ca.Waluta , ca.Komentarz ,ca.Zakonczone , ca.DataModyfikacji ,ca.DataKontrakt ,ca.DataZadanaMarketing \n" +
 					"from construction con\n" +
@@ -80,18 +79,49 @@ public class PDF_Construction {
 			boolean naglowek = false;
 			while(ProjectSchedule.next()){
 
+				String ProjectGroup = "";
+				String ProjectNumber = "";
 
-
+				String LeveringsDatumVoorzien = "";
+				String Leverdatum = "";
 
 				String calyNumer = ProjectSchedule.getString("nrMaszyny");
 				String[] p;
 
+
+				/* jesli CalyNUmer == null, znaczy ze w Calendar nie ma informacji na temat podprojektow
+				* trzeba szukac informacji w tabeli Bestelling i  Bestelling Detail bazujac na numerze projektu */
 				if(calyNumer == null) {
+
+
 					calyNumer = ProjectSchedule.getString("Projekt");
+
+					p = calyNumer.split("/");
+					 ProjectGroup = p[0];
+					 ProjectNumber = p[1];
+
+
+
+					 String Inner_sql = "select LEVERINGSDATUMVOORZIEN ,b2.LEVERDATUM from bestellingdetail b2b \n" +
+							 "left join bestelling b2 \n" +
+							 "on b2b.ORDERNUMMER  = b2.ORDERNUMMER \n" +
+							 "where b2b.ORDERNUMMER  = '"+ProjectNumber+"'\n" +
+							 "and b2.leverancier  = '"+ProjectGroup+"'\n" +
+							 "and b2b.leverancier   = '"+ProjectGroup+"'\n" +
+							 "limit 1 ";
+
+					ResultSet InnerResultSet = pobierzProjectSchedule.executeQuery(Inner_sql);
+
+					while(InnerResultSet.next()) {
+
+						LeveringsDatumVoorzien = InnerResultSet.getString("LEVERINGSDATUMVOORZIEN");
+						Leverdatum = InnerResultSet.getString("LEVERDATUM");
+
+					}
+
+					InnerResultSet.close();
+
 				}
-				p = calyNumer.split("/");
-				String ProjectGroup = p[0];
-				String ProjectNumber = p[1];
 
 
 				if(!poprzedni.equals(calyNumer)){
@@ -99,12 +129,13 @@ public class PDF_Construction {
 					poprzedni = calyNumer;
 				}
 				String MontazFinishDate = ProjectSchedule.getString("dataKoniecMontazu");
-					if(MontazFinishDate == null)
-						MontazFinishDate = " ";
+					if(MontazFinishDate == null) {
+						MontazFinishDate = Leverdatum;
+					}
 
 				String ProductionDate = ProjectSchedule.getString("dataProdukcji");
 					if(ProductionDate == null)
-						ProductionDate = " ";
+						ProductionDate = LeveringsDatumVoorzien;
 
 				String ProjectName = ProjectSchedule.getString("Opis");
 					if(ProjectName == null) {
@@ -125,7 +156,7 @@ public class PDF_Construction {
 						table.setHorizontalAlignment(Element.ALIGN_CENTER);
 						table.setHorizontalAlignment(Element.ALIGN_CENTER);
 					}
-					addProjectHeader(new String[] {ProjectGroup + "/" + ProjectNumber, ProjectName, ProductionDate, klient, MontazFinishDate}, table);
+					addProjectHeader(new String[] {calyNumer, ProjectName, ProductionDate, klient, MontazFinishDate}, table);
 					naglowek=true;
 				}
 
