@@ -66,24 +66,54 @@ public class PDF_Construction {
 
 			//dla kazdego projektu
 			Statement pobierzProjectSchedule = myConn.createStatement();
-			String sql = "select * from construction join calendar on construction.projekt=calendar.nrmaszyny where Status500 = 'O' order by calendar.dataKoniecMontazu, nrMaszyny";
+		//	String sql = "select * from construction left join calendar on construction.projekt=calendar.nrmaszyny where Status500 = 'O' order by calendar.dataKoniecMontazu, nrMaszyny";
+			String sql = "select con.KodArtykulu , con.Nazwa, con.Projekt500 , con.KartaPracy, con.NumerSeryjny , con.Projekt , con.StatusWorkbon , con.Status500,\n" +
+					"ca.NrMaszyny ,ca.Opis ,ca.Klient , ca.DataProdukcji ,ca.DataKoniecMontazu ,ca.Typ ,ca.Cena , ca.Waluta , ca.Komentarz ,ca.Zakonczone , ca.DataModyfikacji ,ca.DataKontrakt ,ca.DataZadanaMarketing \n" +
+					"from construction con\n" +
+					"left join calendar  ca\n" +
+					"on con.projekt=ca.nrmaszyny \n" +
+					"where con.Status500 = 'O' \n" +
+					"order by ca.dataKoniecMontazu, ca.nrMaszyny";
+
 			ResultSet ProjectSchedule = pobierzProjectSchedule.executeQuery(sql);
 			String poprzedni = "";
 			boolean naglowek = false;
 			while(ProjectSchedule.next()){
 
+
+
+
 				String calyNumer = ProjectSchedule.getString("nrMaszyny");
-				String [] p = calyNumer.split("/");
+				String[] p;
+
+				if(calyNumer == null) {
+					calyNumer = ProjectSchedule.getString("Projekt");
+				}
+				p = calyNumer.split("/");
 				String ProjectGroup = p[0];
 				String ProjectNumber = p[1];
+
+
 				if(!poprzedni.equals(calyNumer)){
 					naglowek = false;
 					poprzedni = calyNumer;
 				}
 				String MontazFinishDate = ProjectSchedule.getString("dataKoniecMontazu");
+					if(MontazFinishDate == null)
+						MontazFinishDate = " ";
+
 				String ProductionDate = ProjectSchedule.getString("dataProdukcji");
+					if(ProductionDate == null)
+						ProductionDate = " ";
+
 				String ProjectName = ProjectSchedule.getString("Opis");
+					if(ProjectName == null) {
+						ProjectName = ProjectSchedule.getString("Nazwa");
+					}
+
 				String klient = ProjectSchedule.getString("klient");
+					if(klient == null)
+						klient = " ";
 
 				if(!naglowek){
 					if(table.size()!=0){
@@ -95,7 +125,7 @@ public class PDF_Construction {
 						table.setHorizontalAlignment(Element.ALIGN_CENTER);
 						table.setHorizontalAlignment(Element.ALIGN_CENTER);
 					}
-					addProjectHeader(new String[] {ProjectGroup+"/"+ProjectNumber, ProjectName, ProductionDate, klient, MontazFinishDate}, table);
+					addProjectHeader(new String[] {ProjectGroup + "/" + ProjectNumber, ProjectName, ProductionDate, klient, MontazFinishDate}, table);
 					naglowek=true;
 				}
 
@@ -164,7 +194,12 @@ public class PDF_Construction {
 				st2.close();
 				addCell(table, minutRejestr);
 				//sprawdzenie kto sie zarejestrowa?
-				String sql3 = "select cfnaam from Rejestracja where werkbon = '"+numerBonu+"' group by CFNAAM";
+			//	String sql3 = "select cfnaam from Rejestracja where werkbon = '"+numerBonu+"' group by CFNAAM";
+
+				String sql3 =  "select CFWERKNEMERNAAM from werkuren w \n" +
+						"where WERKBONNUMMER  = '"+numerBonu+"'\n" +
+						"group by CFWERKNEMERNAAM\n";
+
 				Statement st3 = myConn.createStatement();
 				ResultSet rs3 = st3.executeQuery(sql3);
 				while(rs3.next()){
@@ -272,8 +307,13 @@ public class PDF_Construction {
 
 		//dla wszystkich otwartych zamówie? na prace konstrukcyjne - sprawdz status
 		Statement st = myConn.createStatement();
-		String sql = "SELECT * FROM werkbon join bestelling on werkbon.project = bestelling.leverancierordernummer where werkpost = 'KM01' and bestelling.statuscode = 'O' ";
+		//String sql = "SELECT * FROM werkbon join bestelling on werkbon.project = bestelling.leverancierordernummer where werkpost = 'KM01' and bestelling.statuscode = 'O' ";
+
+		String sql = "SELECT * FROM werkbon join bestelling on werkbon.project = bestelling.leverancierordernummer where werkpost = 'KM01' and bestelling.statuscode = 'O'\n" +
+				"and (werkbon.afdeling  = 2 or werkbon .AFDELING  =6)\n" +
+				"group by werkbon.AFDELINGSEQ \n";
 		ResultSet rs = st.executeQuery(sql);
+
 		while(rs.next()){
 			String nr500 = rs.getString("afdelingseq");
 			String kodArt = rs.getString("artikelcode");
@@ -284,17 +324,21 @@ public class PDF_Construction {
 		//	String serialNumber = kodArt.substring(3, 9);  // index out of bounds
 			String serialNumber = kodArt;
 
-			String sql2 = "select nrMaszyny from Calendar where nrMaszyny = '2/"+serialNumber+"' or nrMaszyny = '6/"+serialNumber+"' order by nrMaszyny";
-			String sql3 = "select nrMaszyny from Calendar where nrMaszyny like ('2/"+serialNumber+"%' or nrMaszyny like '6/"+serialNumber+"%') and zakonczone = 0 order by nrMaszyny";
-			String sql4 = "select nrMaszyny from Calendar where nrMaszyny = '0/"+serialNumber+"'";
+		//	String sql2 = "select nrMaszyny from Calendar where nrMaszyny = '2/"+serialNumber+"' or nrMaszyny = '6/"+serialNumber+"' order by nrMaszyny";
+
+			String sql2 = "select LEVERANCIERORDERNUMMER  from bestelling b2 \n" +
+					"where ORDERNUMMER  = '"+kodArt+"'";
+
+		//	String sql3 = "select nrMaszyny from Calendar where nrMaszyny like ('2/"+serialNumber+"%' or nrMaszyny like '6/"+serialNumber+"%') and zakonczone = 0 order by nrMaszyny";
+		//	String sql4 = "select nrMaszyny from Calendar where nrMaszyny = '0/"+serialNumber+"'";
 			Statement st2 = myConn.createStatement();
 			ResultSet rs2 = st2.executeQuery(sql2);
 			boolean found = false;
-			String nrMaszyny = "";
+			String nrMaszyny = kodArt;
 			//sprawdzenie wsrod maszyn uruchomionych produkcyjnie
 			while(rs2.next()){
 				if(!found){
-					nrMaszyny = rs2.getString("nrMaszyny");
+					nrMaszyny = rs2.getString("LEVERANCIERORDERNUMMER");
 					found=true;
 				}
 			}
@@ -302,32 +346,32 @@ public class PDF_Construction {
 			st2.close();
 
 			//sprawdzenie wsrod podprojektow (bez uruchomienia glownych projektow)
-			if(!found){
-				Statement st3 = myConn.createStatement();
-				ResultSet rs3 = st3.executeQuery(sql3);
-				while(rs3.next()){
-					if(!found){
-						nrMaszyny = rs3.getString("nrMaszyny");
-						found=true;
-					}
-				}
-				rs3.close();
-				st3.close();
-			}
+//			if(!found){
+//				Statement st3 = myConn.createStatement();
+//				ResultSet rs3 = st3.executeQuery(sql3);
+//				while(rs3.next()){
+//					if(!found){
+//						nrMaszyny = rs3.getString("nrMaszyny");
+//						found=true;
+//					}
+//				}
+//				rs3.close();
+//				st3.close();
+//			}
 
 			//sprawdz tylko wsrod zlecen produkcyjnych w sprzedazy:
-			if(!found){
-				Statement st4 = myConn.createStatement();
-				ResultSet rs4 = st4.executeQuery(sql4);
-				while(rs4.next()){
-					if(!found){
-						nrMaszyny = rs4.getString("nrMaszyny");
-						found=true;
-					}
-				}
-				rs4.close();
-				st4.close();
-			}
+//			if(!found){
+//				Statement st4 = myConn.createStatement();
+//				ResultSet rs4 = st4.executeQuery(sql4);
+//				while(rs4.next()){
+//					if(!found){
+//						nrMaszyny = rs4.getString("nrMaszyny");
+//						found=true;
+//					}
+//				}
+//				rs4.close();
+//				st4.close();
+//			}
 
 			//wpisz do bazy prac? konstrukcji
 			Statement czyJest = myConn.createStatement();
